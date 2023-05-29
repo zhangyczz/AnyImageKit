@@ -78,8 +78,10 @@ final class CaptureButton: UIControl {
             addGestureRecognizer(tapGesture)
         }
         if options.mediaOptions.contains(.video) {
-            let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(onLongPressed(_:)))
-            addGestureRecognizer(longPressGesture)
+//            let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(onLongPressed(_:)))
+//            addGestureRecognizer(longPressGesture)
+            let viedeotapGesture = UITapGestureRecognizer(target: self, action: #selector(videoTapped(_:)))
+            addGestureRecognizer(viedeotapGesture)
         }
     }
 }
@@ -110,6 +112,26 @@ extension CaptureButton {
             delegate?.captureButtonDidTapped(self)
         default:
             break
+        }
+    }
+    
+    @objc private func videoTapped(_ sender: UITapGestureRecognizer) {
+        if processState == .idle {
+            processState = .pressing
+            startTime = Date()
+            circleView.setStyle(.large, animated: true)
+            buttonView.setStyle(.recording, animated: true)
+            delegate?.captureButtonDidBeganLongPress(self)
+            let displayLink = CADisplayLink(target: self, selector: #selector(onDisplayLink(_:)))
+            displayLink.preferredFramesPerSecond = 60
+            displayLink.add(to: .current, forMode: .default)
+            self.displayLink = displayLink
+        } else {
+            processState = .idle
+            progressView.setProgress(0.0)
+            circleView.setStyle(.small, animated: true)
+            buttonView.setStyle(.normal, animated: true)
+            delegate?.captureButtonDidEndedLongPress(self)
         }
     }
      
